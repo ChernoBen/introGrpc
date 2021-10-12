@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"intro/greet/greetpb"
 	"log"
@@ -13,6 +14,18 @@ type server struct {
 	greetpb.UnimplementedGreetServiceServer
 }
 
+func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
+	fmt.Println("greet function invocada!!!")
+	//obter dados da request
+	first_name := req.GetGreeting().GetFirstName()
+	last_name := req.GetGreeting().GetLastName()
+	//criando a response
+	result := "Hello " + first_name + " " + last_name
+	res := &greetpb.GreetResponse{
+		Result: result,
+	}
+	return res, nil
+}
 func main() {
 	fmt.Println("Hello gRPC!!")
 	//criar um listener
