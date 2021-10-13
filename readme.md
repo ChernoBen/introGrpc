@@ -9,3 +9,4 @@
     - export PATH=$PATH:/$GO_PATH/bin
     - chmod +x run.sh
     - chmod +x client.sh
+    - chmod +x gen.sh
