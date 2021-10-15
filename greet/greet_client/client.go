@@ -6,6 +6,7 @@ import (
 	"intro/greet/greetpb"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -25,6 +26,56 @@ func main() {
 	}
 	doUnary(c)
 	doServerStreaming(c)
+	doClientStreaming(c)
+}
+
+//func que chama metodo client streaming
+func doClientStreaming(c greetpb.GreetServiceClient) {
+	fmt.Println("Client streaming RPC")
+	//criando as requests
+	requests := []*greetpb.LongGreetRequest{
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Ben",
+				LastName:  "ja",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Francisco",
+				LastName:  "Benjamim",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Cherno",
+				LastName:  "Ben",
+			},
+		},
+		{
+			Greeting: &greetpb.Greeting{
+				FirstName: "Benjamim",
+				LastName:  "Francisco",
+			},
+		},
+	}
+	//nesse tipo, client streaming não é necessario passar request, apenas context.Background
+	stream, err := c.LongGreet(context.Background())
+	if err != nil {
+		log.Fatalf("Erro na chamada da funcao client streaming: %v\n", err)
+	}
+	//iterar o slice de requests
+	for _, req := range requests {
+		fmt.Printf("request sent : %v\n", req)
+		stream.Send(req)
+		time.Sleep(100 * time.Millisecond)
+	}
+	//fechando stream
+	res, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("erro ao receber msg de LongGreeting %v\n", err)
+	}
+	fmt.Printf("Response: %v", res)
 }
 
 //funcao que chama metodo unario

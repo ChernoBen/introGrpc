@@ -27,6 +27,15 @@ message GreetManyTimesResponse{
     string result = 1;
 }
 
+//definição request e response client streaming
+message LongGreetRequest{
+    Greeting greeting = 1;
+}
+
+message LongGreetResponse{
+    string result = 1;
+}
+
 service GreetService{
     //definindo uma unary api
     //Greet recebe uma request e retorna uma response
@@ -34,4 +43,7 @@ service GreetService{
     
     //difindo server streaming 
     rpc GreetManyTimes(GreetManyTimesRequest) returns (stream GreetManyTimesResponse){};
+
+    //definindo client streaming 
+    rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse){};
 }
