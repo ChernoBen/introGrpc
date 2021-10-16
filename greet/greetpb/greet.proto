@@ -45,6 +45,15 @@ message GreetEveryOneResponse{
     string result =1;
 }
 
+//exemplo usano dead line
+message GreetWithDeadLineRequest{
+    Greeting greeting = 1;
+}
+
+message GreetWithDeadLineResponse{
+    string result = 1;
+}
+
 service GreetService{
     //definindo uma unary api
     //Greet recebe uma request e retorna uma response
@@ -58,4 +67,7 @@ service GreetService{
 
     //definindo bidirectional streaming
     rpc GreetEveryOne(stream GreetEveryOneRequest)returns(stream GreetEveryOneResponse){};
+    
+    //definição de deadline em unary api
+    rpc GreetWithDeadLine(GreetWithDeadLineRequest)returns(GreetWithDeadLineResponse){};
 }

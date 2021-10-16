@@ -27,6 +27,8 @@ type GreetServiceClient interface {
 	LongGreet(ctx context.Context, opts ...grpc.CallOption) (GreetService_LongGreetClient, error)
 	//definindo bidirectional streaming
 	GreetEveryOne(ctx context.Context, opts ...grpc.CallOption) (GreetService_GreetEveryOneClient, error)
+	//definição de deadline em unary api
+	GreetWithDeadLine(ctx context.Context, in *GreetWithDeadLineRequest, opts ...grpc.CallOption) (*GreetWithDeadLineResponse, error)
 }
 
 type greetServiceClient struct {
@@ -143,6 +145,15 @@ func (x *greetServiceGreetEveryOneClient) Recv() (*GreetEveryOneResponse, error)
 	return m, nil
 }
 
+func (c *greetServiceClient) GreetWithDeadLine(ctx context.Context, in *GreetWithDeadLineRequest, opts ...grpc.CallOption) (*GreetWithDeadLineResponse, error) {
+	out := new(GreetWithDeadLineResponse)
+	err := c.cc.Invoke(ctx, "/greet.GreetService/GreetWithDeadLine", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // GreetServiceServer is the server API for GreetService service.
 // All implementations must embed UnimplementedGreetServiceServer
 // for forward compatibility
@@ -156,6 +167,8 @@ type GreetServiceServer interface {
 	LongGreet(GreetService_LongGreetServer) error
 	//definindo bidirectional streaming
 	GreetEveryOne(GreetService_GreetEveryOneServer) error
+	//definição de deadline em unary api
+	GreetWithDeadLine(context.Context, *GreetWithDeadLineRequest) (*GreetWithDeadLineResponse, error)
 	mustEmbedUnimplementedGreetServiceServer()
 }
 
@@ -174,6 +187,9 @@ func (UnimplementedGreetServiceServer) LongGreet(GreetService_LongGreetServer) e
 }
 func (UnimplementedGreetServiceServer) GreetEveryOne(GreetService_GreetEveryOneServer) error {
 	return status.Errorf(codes.Unimplemented, "method GreetEveryOne not implemented")
+}
+func (UnimplementedGreetServiceServer) GreetWithDeadLine(context.Context, *GreetWithDeadLineRequest) (*GreetWithDeadLineResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method GreetWithDeadLine not implemented")
 }
 func (UnimplementedGreetServiceServer) mustEmbedUnimplementedGreetServiceServer() {}
 
@@ -279,6 +295,24 @@ func (x *greetServiceGreetEveryOneServer) Recv() (*GreetEveryOneRequest, error) 
 	return m, nil
 }
 
+func _GreetService_GreetWithDeadLine_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GreetWithDeadLineRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(GreetServiceServer).GreetWithDeadLine(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/greet.GreetService/GreetWithDeadLine",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(GreetServiceServer).GreetWithDeadLine(ctx, req.(*GreetWithDeadLineRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // GreetService_ServiceDesc is the grpc.ServiceDesc for GreetService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -289,6 +323,10 @@ var GreetService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Greet",
 			Handler:    _GreetService_Greet_Handler,
+		},
+		{
+			MethodName: "GreetWithDeadLine",
+			Handler:    _GreetService_GreetWithDeadLine_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

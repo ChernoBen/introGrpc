@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -27,7 +29,40 @@ func main() {
 	//doUnary(c)
 	//doServerStreaming(c)
 	//doClientStreaming(c)
-	doBiDiStreaming(c)
+	//doBiDiStreaming(c)
+	doUnaryWithDeadLine(c, 5*time.Second)
+	doUnaryWithDeadLine(c, 1*time.Second)
+}
+
+//unary com deadline
+func doUnaryWithDeadLine(c greetpb.GreetServiceClient, seconds time.Duration) {
+	fmt.Println("Inicio func unaria")
+	//criando request
+	req := &greetpb.GreetWithDeadLineRequest{
+		Greeting: &greetpb.Greeting{
+			FirstName: "Benjamim",
+			LastName:  "Francisco",
+		},
+	}
+	//definindo deadline no context
+	ctx, cancel := context.WithTimeout(context.Background(), seconds)
+	defer cancel()
+	//invocando metodo unario
+	response, error := c.GreetWithDeadLine(ctx, req)
+	if error != nil {
+		statusErr, ok := status.FromError(error)
+		if ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				fmt.Println("Tempo maximo atingido")
+			} else {
+				fmt.Printf("Erro inesperado: %v\n", statusErr)
+			}
+		} else {
+			log.Fatalf("Error enquanto chamava a Greet %v \n", error)
+		}
+		return
+	}
+	log.Printf("Unary Response: %v", response.Result)
 }
 
 // func que consulta BiDiStreaming

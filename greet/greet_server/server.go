@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct {
@@ -29,6 +31,27 @@ func main() {
 	if err := s.Serve(lis); err != nil {
 		log.Fatalf("Failed to set the server: %v", err)
 	}
+}
+
+//metodo unary com deadline
+func (*server) GreetWithDeadLine(ctx context.Context, req *greetpb.GreetWithDeadLineRequest) (*greetpb.GreetWithDeadLineResponse, error) {
+	fmt.Println("greet dealine function invocada!!!")
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			fmt.Println("Cliente cancelou a request")
+			return nil, status.Error(codes.Canceled, "O cliente cancelou a request!")
+		}
+		time.Sleep(1 * time.Second)
+	}
+	//obter dados da request
+	first_name := req.GetGreeting().GetFirstName()
+	last_name := req.GetGreeting().GetLastName()
+	//criando a response
+	result := "Hello " + first_name + " " + last_name
+	res := &greetpb.GreetWithDeadLineResponse{
+		Result: result,
+	}
+	return res, nil
 }
 
 //metodo unary para struct server
