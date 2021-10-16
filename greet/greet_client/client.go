@@ -10,13 +10,21 @@ import (
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
 func main() {
 	fmt.Println("Hello client!!")
+	//passando credenciais para comunicação com servidor
+	certFile := "ssl/ca.crt"
+	creds, err := credentials.NewServerTLSFromFile(certFile, "")
+	if err != nil {
+		log.Fatalf("Erro ao obter credenciais: %v\n", err)
+	}
+	opts := grpc.WithTransportCredentials(creds)
 	//1# - criar uma conexão com servidor
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := grpc.Dial("localhost:50051", opts)
 	if err != nil {
 		log.Fatalf("Failed to connect : %v", err)
 	}
