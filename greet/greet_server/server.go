@@ -17,6 +17,20 @@ type server struct {
 	greetpb.UnimplementedGreetServiceServer
 }
 
+func main() {
+	fmt.Println("Hello gRPC!!")
+	//criar um listener
+	lis, err := net.Listen("tcp", "0.0.0.0:50051")
+	if err != nil {
+		log.Fatalf("Faild to listen: %v", err)
+	}
+	s := grpc.NewServer()
+	greetpb.RegisterGreetServiceServer(s, &server{})
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("Failed to set the server: %v", err)
+	}
+}
+
 //metodo unary para struct server
 func (*server) Greet(ctx context.Context, req *greetpb.GreetRequest) (*greetpb.GreetResponse, error) {
 	fmt.Println("greet function invocada!!!")
@@ -68,16 +82,26 @@ func (*server) LongGreet(stream greetpb.GreetService_LongGreetServer) error {
 	}
 }
 
-func main() {
-	fmt.Println("Hello gRPC!!")
-	//criar um listener
-	lis, err := net.Listen("tcp", "0.0.0.0:50051")
-	if err != nil {
-		log.Fatalf("Faild to listen: %v", err)
-	}
-	s := grpc.NewServer()
-	greetpb.RegisterGreetServiceServer(s, &server{})
-	if err := s.Serve(lis); err != nil {
-		log.Fatalf("Failed to set the server: %v", err)
+// bi directional method
+func (*server) GreetEveryOne(stream greetpb.GreetService_GreetEveryOneServer) error {
+	fmt.Println("Bi directional streaming method")
+	for {
+		req, err := stream.Recv()
+		if err != nil {
+			log.Fatalf("falha ao ler mensagem: %v\n", err)
+			return err
+		}
+		if err == io.EOF {
+			return nil
+		}
+		first_name := req.GetGreeting().GetFirstName()
+		err = stream.Send(&greetpb.GreetEveryOneResponse{
+			Result: "Hello" + first_name,
+		})
+		if err != nil {
+			log.Fatalf("erro enquanto tentava enviar msg")
+			return err
+		}
+
 	}
 }

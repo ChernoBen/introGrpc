@@ -36,6 +36,15 @@ message LongGreetResponse{
     string result = 1;
 }
 
+//Definição biderectional streaming req e res
+message GreetEveryOneRequest{
+    Greeting greeting = 1;
+}
+
+message GreetEveryOneResponse{
+    string result =1;
+}
+
 service GreetService{
     //definindo uma unary api
     //Greet recebe uma request e retorna uma response
@@ -46,4 +55,7 @@ service GreetService{
 
     //definindo client streaming 
     rpc LongGreet(stream LongGreetRequest) returns (LongGreetResponse){};
+
+    //definindo bidirectional streaming
+    rpc GreetEveryOne(stream GreetEveryOneRequest)returns(stream GreetEveryOneResponse){};
 }
