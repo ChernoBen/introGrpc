@@ -89,19 +89,19 @@ func (*server) GreetEveryOne(stream greetpb.GreetService_GreetEveryOneServer) er
 		req, err := stream.Recv()
 		if err != nil {
 			log.Fatalf("falha ao ler mensagem: %v\n", err)
-			return err
+			break
 		}
 		if err == io.EOF {
-			return nil
+			break
 		}
 		first_name := req.GetGreeting().GetFirstName()
-		err = stream.Send(&greetpb.GreetEveryOneResponse{
+		erro := stream.Send(&greetpb.GreetEveryOneResponse{
 			Result: "Hello" + first_name,
 		})
-		if err != nil {
-			log.Fatalf("erro enquanto tentava enviar msg")
-			return err
+		if erro != nil {
+			log.Fatalf("erro enquanto tentava enviar msg %v\n", erro)
+			break
 		}
-
 	}
+	return nil
 }
